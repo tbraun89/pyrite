@@ -58,7 +58,7 @@ class Gpg():
     
     def __init__(self, show_version=True, firstchoice='gpg2'):
         """Confirm we can run gpg or gpg2."""
-        
+
         def gpg1():
             self.vers = Popen(['gpg', '--version'], stdout=PIPE).communicate()[0]
             self.GPG_BINARY = 'gpg'
@@ -279,6 +279,32 @@ class Gpg():
         return check_output(split(
             "{} --list-secret-keys --with-colons --fast-list-mode"
             .format(self.GPG_BINARY))).split(':', 5)[4]
+
+
+    def get_gpgpublickeys(self):
+        """Return a list of 'public key/user id' pairs."""
+        keys = [y[4] for y in [x.split(':') for x in filter(lambda a: a.startswith("pub"), check_output(split(
+            "{} --list-public-keys --with-colons"
+            .format(self.GPG_BINARY))).split("\n"))]]
+            
+        uids = [y[9] for y in [x.split(':') for x in filter(lambda a: a.startswith("uid"), check_output(split(
+            "{} --list-public-keys --with-colons"
+            .format(self.GPG_BINARY))).split("\n"))]]
+            
+        return zip(keys, uids)
+
+
+    def get_gpgsecretkeys(self):
+        """Return a list of 'secret key/user id' pairs."""
+        keys = [y[4] for y in [x.split(':') for x in filter(lambda a: a.startswith("sec"), check_output(split(
+            "{} --list-secret-keys --with-colons"
+            .format(self.GPG_BINARY))).split("\n"))]]
+            
+        uids = [y[9] for y in [x.split(':') for x in filter(lambda a: a.startswith("uid"), check_output(split(
+            "{} --list-secret-keys --with-colons"
+            .format(self.GPG_BINARY))).split("\n"))]]
+            
+        return zip(keys, uids)
 
 
 
